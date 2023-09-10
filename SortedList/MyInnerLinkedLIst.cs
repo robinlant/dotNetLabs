@@ -1,31 +1,23 @@
 using System.Collections;
-using System.Diagnostics;
 
 namespace SortedList;
 
+
+// FOR NOW IT COMPARES USING EQUALS (LINKS FOR CLASSES) CHANGE IT LATER
+// ALSO AS I AM DOING A SORTED LIST MANY THINGS CAN BE OPTIMIZED BUT LATER
+// CURRENTLY IT IS DEFAULT LINKED LIST WITHOUT A TAIL (I DONT NEED ONE FOR SORTED COLLECTION)
 internal class MyInnerLinkedLIst<T> : ICollection<T>
 {
     private MyNode<T>? _head;
-
-    public int Count { get; private set; }
     public bool IsReadOnly { get; } = false;
+    public int Count { get; private set; } // length of the list
     public int Version { get; private set; }
 
     public IEnumerator<T> GetEnumerator()
     {
-        throw new NotImplementedException();
+        IEnumerator <T> enumerator = new MyEnumerator(_head, this);
+        return enumerator;
     }
-
-    // public IEnumerator<T> GetEnumerator()
-    // {
-    //     MyNode<T>? current = _head;
-    //     while (current != null)
-    //     {
-    //         yield return current.Item;
-    //         current = current.Next;
-    //     }
-    // } 2nd variant
-
 
     IEnumerator IEnumerable.GetEnumerator()
     {
@@ -39,6 +31,8 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
         {
             _head = new MyNode<T>(item);
             IncrementCount();
+            UpdateVersion();
+
             return;
         }
 
@@ -49,11 +43,15 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
         }
 
         current.Next = new MyNode<T>(item);
+        IncrementCount();
+        UpdateVersion();
     }
 
     public void Clear()
     {
         _head = null;
+        ResetVersion();
+        ResetCount();
     }
 
     public bool Contains(T item)
@@ -71,12 +69,70 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
 
     public void CopyTo(T[] array, int arrayIndex)
     {
-        throw new NotImplementedException();
+        if (array.Length - arrayIndex < Count )
+        {
+            throw new ArgumentException("Not enough space. Count > array length - starting index");
+        }
+
+        if (arrayIndex < 0 || arrayIndex >= array.Length)
+        {
+            throw new ArgumentException($"Invalid Argument. arrayIndex = {arrayIndex}. It has to be greater than zero and smaller than array length");
+        }
+
+        var i = 0;
+        foreach (var item in this)
+        {
+            array[arrayIndex + i] = item;
+            i++;
+        }
     }
 
     public bool Remove(T item)
     {
-        throw new NotImplementedException();
+        if (Count == 0) return false;
+        if (item!.Equals(_head))
+        {
+            if (_head!.Next != null)
+            {
+                _head = _head.Next;
+                UpdateVersion();
+                DecrementCount();
+                return true;
+            }
+
+            _head = null;
+            DecrementCount();
+            UpdateVersion();
+            return true;
+        }
+
+        var current = _head;
+        var prev = current;
+        while (current != null)
+        {
+            if (current.Item!.Equals(item))
+            {
+                prev!.Next = current.Next;
+                DecrementCount();
+                UpdateVersion();
+                return true;
+            }
+            prev = current;
+            current = current.Next;
+        }
+
+        return false;
+    }
+
+    // version and length control methods
+    private void UpdateVersion()
+    {
+        Version++;
+    }
+
+    private void ResetVersion()
+    {
+        Version = 0;
     }
 
     private void IncrementCount()
@@ -89,6 +145,11 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
         Count--;
     }
 
+    private void ResetCount()
+    {
+        Count = 0;
+    }
+
     // Enumerator
     private class MyEnumerator : IEnumerator<T>
     {
@@ -96,7 +157,7 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
         private MyNode<T>? _head;
 
         private readonly MyInnerLinkedLIst<T> _list;
-        private int _listStarterVersion;
+        private readonly int _listStarterVersion;
 
         public MyEnumerator(MyNode<T>? head, MyInnerLinkedLIst<T> list)
         {
@@ -113,7 +174,7 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
                 CheckVersion();
                 if (_current == null)
                     throw new InvalidOperationException("Enumeration has not been started ot it is already finished");
-                return _current.Item;
+                return _current.Item; // THIS ENSURES THAT USER WILL WORK WITH T INSTEAD OF THE NODE
             }
         }
 
