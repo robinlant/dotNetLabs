@@ -6,7 +6,7 @@ namespace SortedList;
 // FOR NOW IT COMPARES USING EQUALS (LINKS FOR CLASSES) CHANGE IT LATER
 // ALSO AS I AM DOING A SORTED LIST MANY THINGS CAN BE OPTIMIZED BUT LATER
 // CURRENTLY IT IS DEFAULT LINKED LIST WITHOUT A TAIL (I DONT NEED ONE FOR SORTED COLLECTION)
-internal class MyInnerLinkedLIst<T> : ICollection<T>
+internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 {
     private MyNode<T>? _head;
     public bool IsReadOnly { get; } = false;
@@ -60,7 +60,7 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
 
         while (current != null)
         {
-            if (current.Item!.Equals(item)) return true;
+            if (current.Item.Equals(item)) return true;
             current = current.Next;
         }
 
@@ -156,10 +156,10 @@ internal class MyInnerLinkedLIst<T> : ICollection<T>
         private MyNode<T>? _current;
         private MyNode<T>? _head;
 
-        private readonly MyInnerLinkedLIst<T> _list;
+        private readonly SortedList<T> _list;
         private readonly int _listStarterVersion;
 
-        public MyEnumerator(MyNode<T>? head, MyInnerLinkedLIst<T> list)
+        public MyEnumerator(MyNode<T>? head, SortedList<T> list)
         {
             _current = null;
             _head = head;
