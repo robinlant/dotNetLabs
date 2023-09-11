@@ -9,6 +9,7 @@ namespace SortedList;
 internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 {
     private MyNode<T>? _head;
+    private MyNode<T>? _tail;
     public bool IsReadOnly { get; } = false;
     public int Count { get; private set; } // length of the list
     public int Version { get; private set; }
@@ -30,6 +31,18 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         if (_head == null)
         {
             _head = new MyNode<T>(item);
+            _tail = _head;
+            IncrementCount();
+            UpdateVersion();
+
+            return;
+        }
+        // item < head
+        if (CountSubstraction(_head.Item, item) > 0)
+        {
+            var node = new MyNode<T>(item) { Next = _head };
+            _head.Prev = node;
+            _head = node;
             IncrementCount();
             UpdateVersion();
 
@@ -39,10 +52,22 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         var current = _head;
         while (current.Next != null)
         {
+            if (CountSubstraction(current.Item, item) > 0)
+            {
+                var node = new MyNode<T>(item) { Next = current, Prev = current.Prev};
+                current.Prev = node;
+                node.Prev!.Next = node;
+                IncrementCount();
+                UpdateVersion();
+
+                return;
+            }
+
             current = current.Next;
         }
 
-        current.Next = new MyNode<T>(item);
+        _tail = new MyNode<T>(item) { Prev = current };
+        current.Next = _tail;
         IncrementCount();
         UpdateVersion();
     }
@@ -50,6 +75,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     public void Clear()
     {
         _head = null;
+        _tail = null;
         ResetVersion();
         ResetCount();
     }
@@ -57,10 +83,11 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     public bool Contains(T item)
     {
         var current = _head;
-
         while (current != null)
         {
-            if (current.Item.Equals(item)) return true;
+            var temp = CountSubstraction(current.Item, item);
+            if (temp < 0) return false; // further numbers are bigger
+            if (temp == 0) return true;
             current = current.Next;
         }
 
@@ -69,6 +96,11 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     public void CopyTo(T[] array, int arrayIndex)
     {
+        if (array == null)
+        {
+            throw new ArgumentNullException($"Array {nameof(array)} is null");
+        }
+
         if (array.Length - arrayIndex < Count )
         {
             throw new ArgumentException("Not enough space. Count > array length - starting index");
@@ -89,39 +121,59 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     public bool Remove(T item)
     {
-        if (Count == 0) return false;
-        if (item!.Equals(_head))
+        if (_head == null) return false;
+        if (_head.Item.CompareTo(item) > 0) return false; // item is not in the list
+        if (_head.Item.CompareTo(item) == 0) // head  == item
         {
-            if (_head!.Next != null)
+            if (_head.Next == null)
             {
-                _head = _head.Next;
-                UpdateVersion();
-                DecrementCount();
+                _head = null;
+                _tail = null;
+                ResetVersion();
+                ResetCount();
+
                 return true;
             }
 
-            _head = null;
-            DecrementCount();
+            _head = _head.Next;
             UpdateVersion();
-            return true;
+            DecrementCount();
         }
 
         var current = _head;
-        var prev = current;
-        while (current != null)
+        while (current!.Next != null)
         {
-            if (current.Item!.Equals(item))
+            var temp = current.Item.CompareTo(item);
+            if (temp > 0) return false; // item is not in the list
+            if (temp == 0)
             {
-                prev!.Next = current.Next;
+                if (current.Next == null)
+                {
+                    _tail = current.Prev;
+                    current.Prev!.Next = null;
+                    DecrementCount();
+                    UpdateVersion();
+
+                    return true;
+                }
+
+                current.Next!.Prev = current.Prev;
+                current.Prev!.Next = current.Next;
                 DecrementCount();
                 UpdateVersion();
+
                 return true;
             }
-            prev = current;
+
             current = current.Next;
         }
 
         return false;
+    }
+//TODO remove CountSubstraction after the program is DONE
+    private int CountSubstraction(T a, T b)
+    {
+        return a.CompareTo(b);
     }
 
     // version and length control methods
@@ -223,6 +275,7 @@ internal class MyNode<T>
 {
     public T Item { get; set; }
     public MyNode<T>? Next { get; set; }
+    public MyNode<T>? Prev { get; set; }
 
     public MyNode(T value)
     {
