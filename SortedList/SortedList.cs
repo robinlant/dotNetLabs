@@ -23,6 +23,11 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     public void Add(T item)
     {
+        if (item == null)
+        {
+            throw new ArgumentNullException($"{typeof(T)} {nameof(item)} is null");
+        }
+
         // head is null
         if (_head == null)
         {
@@ -44,15 +49,15 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
             return;
         }
-
+        // cycles till the end
         var current = _head;
         while (current.Next != null)
         {
-            if (current.Item.CompareTo(item) > 0)
+            if (current.Next.Item.CompareTo(item) > 0)
             {
-                var node = new MyNode<T>(item) { Next = current, Prev = current.Prev};
-                current.Prev = node;
-                node.Prev!.Next = node;
+                var node = new MyNode<T>(item) { Next = current.Next, Prev = current};
+                current.Next.Prev = node;
+                current.Next = node;
                 IncrementCount();
                 UpdateVersion();
 
@@ -60,17 +65,6 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
             }
 
             current = current.Next;
-        }
-
-        if (_tail!.Item.CompareTo(item) > 0)
-        {
-            var node = new MyNode<T>(item){ Next = _tail, Prev = _tail.Prev};
-            _tail.Prev = node;
-            node.Prev!.Next = node;
-            UpdateVersion();
-            IncrementCount();
-
-            return;
         }
 
         _tail = new MyNode<T>(item) { Prev = current };
@@ -101,6 +95,20 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         return false;
     }
 
+    private MyNode<T>? FindNodeByItem(T item)
+    {
+        var current = _head;
+        while (current != null)
+        {
+            var temp = current.Item.CompareTo(item);
+            if (temp < 0) return null; // further numbers are bigger
+            if (temp == 0) return current;
+            current = current.Next;
+        }
+
+        return null;
+    }
+
     public void CopyTo(T[] array, int arrayIndex)
     {
         if (array == null)
@@ -128,51 +136,48 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     public bool Remove(T item)
     {
-        if (_head == null) return false;
-        if (_head.Item.CompareTo(item) > 0) return false; // item is not in the list
-        if (_head.Item.CompareTo(item) == 0)
+        if (item == null)
         {
-            if (_head.Next == null)
-            {
-                _head = null;
-                _tail = null;
-                ResetVersion();
-                ResetCount();
+            throw new ArgumentNullException($"{typeof(T)} {nameof(item)} is null");
+        }
 
-                return true;
-            }
+        var searchedNode = FindNodeByItem(item);
+        if (searchedNode == null) return false;
 
+        if (searchedNode == _head && searchedNode == _tail)
+        {
+            _head = null;
+            _tail = null;
+            ResetVersion();
+            ResetCount();
+
+            return true;
+        } if (searchedNode == _head)
+        {
             _head = _head.Next;
-            UpdateVersion();
+            _head!.Prev = null;
             DecrementCount();
-        }
+            UpdateVersion();
 
-        var current = _head;
-        while (current!.Next != null)
-        {
-            var temp = current.Item.CompareTo(item);
-            if (temp > 0) return false; // item is not in the list
-            if (temp == 0)
-            {
-                current.Next!.Prev = current.Prev;
-                current.Prev!.Next = current.Next;
-                DecrementCount();
-                UpdateVersion();
-
-                return true;
-            }
-
-            current = current.Next;
-        }
-
-        if (_tail!.Item.CompareTo(item) == 0)
+            return true;
+        } if (searchedNode == _tail)
         {
             _tail = _tail.Prev;
+            _tail!.Next = null;
             DecrementCount();
             UpdateVersion();
+
+            return true;
         }
-        return false;
+
+        searchedNode.Next!.Prev = searchedNode.Prev;
+        searchedNode.Prev!.Next = searchedNode.Next;
+        DecrementCount();
+        UpdateVersion();
+
+        return true;
     }
+
     // version and length control methods
     private void UpdateVersion() => Version++;
 
