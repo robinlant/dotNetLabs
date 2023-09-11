@@ -10,6 +10,11 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     public int Count { get; private set; } // length of the list
     public int Version { get; private set; }
 
+    public void Test()
+    {
+        T? t = default(T);
+    }
+
     public IEnumerator<T> GetEnumerator()
     {
         IEnumerator <T> enumerator = new MyEnumerator(_head, this);
