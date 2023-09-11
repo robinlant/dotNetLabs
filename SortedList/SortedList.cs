@@ -62,6 +62,17 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
             current = current.Next;
         }
 
+        if (_tail!.Item.CompareTo(item) > 0)
+        {
+            var node = new MyNode<T>(item){ Next = _tail, Prev = _tail.Prev};
+            _tail.Prev = node;
+            node.Prev!.Next = node;
+            UpdateVersion();
+            IncrementCount();
+
+            return;
+        }
+
         _tail = new MyNode<T>(item) { Prev = current };
         current.Next = _tail;
         IncrementCount();
@@ -119,7 +130,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     {
         if (_head == null) return false;
         if (_head.Item.CompareTo(item) > 0) return false; // item is not in the list
-        if (_head.Item.CompareTo(item) == 0) // head  == item
+        if (_head.Item.CompareTo(item) == 0)
         {
             if (_head.Next == null)
             {
@@ -143,16 +154,6 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
             if (temp > 0) return false; // item is not in the list
             if (temp == 0)
             {
-                if (current.Next == null)
-                {
-                    _tail = current.Prev;
-                    current.Prev!.Next = null;
-                    DecrementCount();
-                    UpdateVersion();
-
-                    return true;
-                }
-
                 current.Next!.Prev = current.Prev;
                 current.Prev!.Next = current.Next;
                 DecrementCount();
@@ -164,6 +165,12 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
             current = current.Next;
         }
 
+        if (_tail!.Item.CompareTo(item) == 0)
+        {
+            _tail = _tail.Prev;
+            DecrementCount();
+            UpdateVersion();
+        }
         return false;
     }
     // version and length control methods
@@ -244,16 +251,15 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         public void Dispose() { }
     }
-}
-
-internal class MyNode<T>
-{
-    public T Item { get; set; }
-    public MyNode<T>? Next { get; set; }
-    public MyNode<T>? Prev { get; set; }
-
-    public MyNode(T value)
+    private class MyNode<TU>
     {
-        Item = value;
+        public TU Item { get; set; }
+        public MyNode<TU>? Next { get; set; }
+        public MyNode<TU>? Prev { get; set; }
+
+        public MyNode(TU value)
+        {
+            Item = value;
+        }
     }
 }
