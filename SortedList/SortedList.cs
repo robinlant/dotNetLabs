@@ -2,10 +2,6 @@ using System.Collections;
 
 namespace SortedList;
 
-
-// FOR NOW IT COMPARES USING EQUALS (LINKS FOR CLASSES) CHANGE IT LATER
-// ALSO AS I AM DOING A SORTED LIST MANY THINGS CAN BE OPTIMIZED BUT LATER
-// CURRENTLY IT IS DEFAULT LINKED LIST WITHOUT A TAIL (I DONT NEED ONE FOR SORTED COLLECTION)
 internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 {
     private MyNode<T>? _head;
@@ -38,7 +34,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
             return;
         }
         // item < head
-        if (CountSubstraction(_head.Item, item) > 0)
+        if (_head.Item.CompareTo(item) > 0)
         {
             var node = new MyNode<T>(item) { Next = _head };
             _head.Prev = node;
@@ -52,7 +48,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         var current = _head;
         while (current.Next != null)
         {
-            if (CountSubstraction(current.Item, item) > 0)
+            if (current.Item.CompareTo(item) > 0)
             {
                 var node = new MyNode<T>(item) { Next = current, Prev = current.Prev};
                 current.Prev = node;
@@ -85,7 +81,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         var current = _head;
         while (current != null)
         {
-            var temp = CountSubstraction(current.Item, item);
+            var temp = current.Item.CompareTo(item);
             if (temp < 0) return false; // further numbers are bigger
             if (temp == 0) return true;
             current = current.Next;
@@ -170,37 +166,16 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         return false;
     }
-//TODO remove CountSubstraction after the program is DONE
-    private int CountSubstraction(T a, T b)
-    {
-        return a.CompareTo(b);
-    }
-
     // version and length control methods
-    private void UpdateVersion()
-    {
-        Version++;
-    }
+    private void UpdateVersion() => Version++;
 
-    private void ResetVersion()
-    {
-        Version = 0;
-    }
+    private void ResetVersion() => Version = 0;
 
-    private void IncrementCount()
-    {
-        Count++;
-    }
+    private void IncrementCount() => Count++;
 
-    private void DecrementCount()
-    {
-        Count--;
-    }
+    private void DecrementCount() => Count--;
 
-    private void ResetCount()
-    {
-        Count = 0;
-    }
+    private void ResetCount() => Count = 0;
 
     // Enumerator
     private class MyEnumerator : IEnumerator<T>
