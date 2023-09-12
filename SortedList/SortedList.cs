@@ -1,4 +1,5 @@
 using System.Collections;
+using SortedList.MyEventArgs;
 
 namespace SortedList;
 
@@ -10,10 +11,15 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     public int Count { get; private set; } // length of the list
     public int Version { get; private set; }
 
-    public void Test()
-    {
-        T? t = default(T);
-    }
+    public event EventHandler<ItemEventArgs<T>>? ItemAdded;
+    public event EventHandler<ItemEventArgs<T>>? ItemRemoved;
+    public event EventHandler? ListCleared;
+
+    private void InvokeItemAdded(T item) => ItemAdded?.Invoke(this,new ItemEventArgs<T>(item));
+
+    private void InvokeItemRemoved(T item) => ItemRemoved?.Invoke(this,new ItemEventArgs<T>(item));
+
+    private void InvokeListCleared() => ListCleared?.Invoke(this, EventArgs.Empty);
 
     public IEnumerator<T> GetEnumerator()
     {
@@ -38,6 +44,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         {
             _head = new MyNode<T>(item);
             _tail = _head;
+            InvokeItemAdded(item);
             IncrementCount();
             UpdateVersion();
 
@@ -49,6 +56,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
             var node = new MyNode<T>(item) { Next = _head };
             _head.Prev = node;
             _head = node;
+            InvokeItemAdded(item);
             IncrementCount();
             UpdateVersion();
 
@@ -63,6 +71,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
                 var node = new MyNode<T>(item) { Next = current.Next, Prev = current};
                 current.Next.Prev = node;
                 current.Next = node;
+                InvokeItemAdded(item);
                 IncrementCount();
                 UpdateVersion();
 
@@ -74,6 +83,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         _tail = new MyNode<T>(item) { Prev = current };
         current.Next = _tail;
+        InvokeItemAdded(item);
         IncrementCount();
         UpdateVersion();
     }
@@ -82,6 +92,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     {
         _head = null;
         _tail = null;
+        InvokeListCleared();
         ResetVersion();
         ResetCount();
     }
@@ -153,6 +164,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         {
             _head = null;
             _tail = null;
+            InvokeListCleared();
             ResetVersion();
             ResetCount();
 
@@ -161,6 +173,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         {
             _head = _head.Next;
             _head!.Prev = null;
+            InvokeItemRemoved(item);
             DecrementCount();
             UpdateVersion();
 
@@ -169,6 +182,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         {
             _tail = _tail.Prev;
             _tail!.Next = null;
+            InvokeItemRemoved(item);
             DecrementCount();
             UpdateVersion();
 
@@ -177,6 +191,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         searchedNode.Next!.Prev = searchedNode.Prev;
         searchedNode.Prev!.Next = searchedNode.Next;
+        InvokeItemRemoved(item);
         DecrementCount();
         UpdateVersion();
 
@@ -248,16 +263,17 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         public void Reset()
         {
-            throw new NotSupportedException("Reset is not implemented due to safety reasons");
+            CheckVersion();
+            _current = null;
+
+            // throw new NotSupportedException("Not implemented due to safety reasons");
             // If changes are made to the collection,
             // such as adding, modifying, or deleting elements,
             // the behavior of Reset is undefined.
             // https://learn.microsoft.com/en-us/dotnet/api/system.collections.ienumerator.reset?view=net-6.0
         }
 
-#nullable disable
         object IEnumerator.Current => Current;
-#nullable enable
 
         public void Dispose() { }
     }
