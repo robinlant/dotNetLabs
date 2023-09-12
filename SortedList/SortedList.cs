@@ -15,12 +15,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
     public event EventHandler<ItemEventArgs<T>>? ItemRemoved;
     public event EventHandler? ListCleared;
 
-    private void InvokeItemAdded(T item) => ItemAdded?.Invoke(this,new ItemEventArgs<T>(item));
-
-    private void InvokeItemRemoved(T item) => ItemRemoved?.Invoke(this,new ItemEventArgs<T>(item));
-
-    private void InvokeListCleared() => ListCleared?.Invoke(this, EventArgs.Empty);
-
     public IEnumerator<T> GetEnumerator()
     {
         IEnumerator <T> enumerator = new MyEnumerator(_head, this);
@@ -114,59 +108,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         ResetCount();
     }
 
-    public bool Contains(T item)
-    {
-        var current = _head;
-        while (current != null)
-        {
-            var temp = current.Item.CompareTo(item);
-            if (temp > 0) return false; // further numbers are bigger // changed
-            if (temp == 0) return true;
-            current = current.Next;
-        }
-
-        return false;
-    }
-
-    private MyNode<T>? FindNodeByItem(T item)
-    {
-        var current = _head;
-        while (current != null)
-        {
-            var temp = current.Item.CompareTo(item);
-            if (temp > 0) return null; // further numbers are bigger
-            if (temp == 0) return current;
-            current = current.Next;
-        }
-
-        return null;
-    }
-
-    public void CopyTo(T[] array, int arrayIndex)
-    {
-        if (array == null)
-        {
-            throw new ArgumentNullException($"Array {nameof(array)} is null");
-        }
-
-        if (array.Length - arrayIndex < Count )
-        {
-            throw new ArgumentException("Not enough space. Count > array length - starting index");
-        }
-
-        if (arrayIndex < 0 || arrayIndex >= array.Length)
-        {
-            throw new ArgumentException($"Invalid Argument. arrayIndex = {arrayIndex}. It has to be greater than zero and smaller than array length");
-        }
-
-        var i = 0;
-        foreach (var item in this)
-        {
-            array[arrayIndex + i] = item;
-            i++;
-        }
-    }
-
     public bool Remove(T item)
     {
         if (item == null)
@@ -215,6 +156,65 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         return true;
     }
 
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        if (array == null)
+        {
+            throw new ArgumentNullException($"Array {nameof(array)} is null");
+        }
+
+        if (array.Length - arrayIndex < Count )
+        {
+            throw new ArgumentException("Not enough space. Count > array length - starting index");
+        }
+
+        if (arrayIndex < 0 || arrayIndex >= array.Length)
+        {
+            throw new ArgumentException($"Invalid Argument. arrayIndex = {arrayIndex}. It has to be greater than zero and smaller than array length");
+        }
+
+        var i = 0;
+        foreach (var item in this)
+        {
+            array[arrayIndex + i] = item;
+            i++;
+        }
+    }
+
+    public bool Contains(T item)
+    {
+        var current = _head;
+        while (current != null)
+        {
+            var temp = current.Item.CompareTo(item);
+            if (temp > 0) return false; // further numbers are bigger // changed
+            if (temp == 0) return true;
+            current = current.Next;
+        }
+
+        return false;
+    }
+
+    private MyNode<T>? FindNodeByItem(T item)
+    {
+        var current = _head;
+        while (current != null)
+        {
+            var temp = current.Item.CompareTo(item);
+            if (temp > 0) return null; // further numbers are bigger
+            if (temp == 0) return current;
+            current = current.Next;
+        }
+
+        return null;
+    }
+
+    private void InvokeItemAdded(T item) => ItemAdded?.Invoke(this,new ItemEventArgs<T>(item));
+
+    private void InvokeItemRemoved(T item) => ItemRemoved?.Invoke(this,new ItemEventArgs<T>(item));
+
+    private void InvokeListCleared() => ListCleared?.Invoke(this, EventArgs.Empty);
+
     // version and length control methods
     private void UpdateVersion() => Version++;
 
@@ -254,14 +254,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             }
         }
 
-        private void CheckVersion()
-        {
-            if (_listStarterVersion != _list.Version)
-            {
-                throw new InvalidOperationException("Collection was modified");
-            }
-        }
-
         public bool MoveNext()
         {
             CheckVersion();
@@ -290,6 +282,14 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         object IEnumerator.Current => Current;
 
         public void Dispose() { }
+
+        private void CheckVersion()
+        {
+            if (_listStarterVersion != _list.Version)
+            {
+                throw new InvalidOperationException("Collection was modified");
+            }
+        }
     }
     private class MyNode<TU>
     {
