@@ -108,32 +108,8 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         var searchedNode = FindNodeByItem(item);
         if (searchedNode == null) return false;
 
-        if (searchedNode == _head && searchedNode == _tail)
-        {
-            _head = null;
-            _tail = null;
-            AfterItemDeleted(item);
-
-            return true;
-        } if (searchedNode == _head)
-        {
-            _head = _head.Next;
-            _head!.Prev = null;
-            AfterItemDeleted(item);
-
-            return true;
-        } if (searchedNode == _tail)
-        {
-            _tail = _tail.Prev;
-            _tail!.Next = null;
-            AfterItemDeleted(item);
-
-            return true;
-        }
-
-        searchedNode.Next!.Prev = searchedNode.Prev;
-        searchedNode.Prev!.Next = searchedNode.Next;
-        AfterItemDeleted(item);
+        RemoveNode(searchedNode);
+        AfterItemRemoved(item);
 
         return true;
     }
@@ -168,9 +144,9 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         var current = _head;
         while (current != null)
         {
-            var temp = current.Item.CompareTo(item);
-            if (temp > 0) return false;
-            if (temp == 0) return true;
+            var compareInt = current.Item.CompareTo(item);
+            if (compareInt > 0) return false;
+            if (compareInt == 0) return true;
             current = current.Next;
         }
 
@@ -182,16 +158,42 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         var current = _head;
         while (current != null)
         {
-            var temp = current.Item.CompareTo(item);
-            if (temp > 0) return null;
-            if (temp == 0) return current;
+            var compareInt = current.Item.CompareTo(item);
+            if (compareInt > 0) return null;
+            if (compareInt == 0) return current;
             current = current.Next;
         }
 
         return null;
     }
 
-    private void AfterItemDeleted(T item)
+    private void RemoveNode(MyNode<T> node)
+    {
+        if (node == _head && node == _tail)
+        {
+            _head = null;
+            _tail = null;
+
+            return;
+        } if (node == _head)
+        {
+            _head = _head.Next;
+            _head!.Prev = null;
+
+            return;
+        } if (node == _tail)
+        {
+            _tail = _tail.Prev;
+            _tail!.Next = null;
+
+            return;
+        }
+
+        node.Next!.Prev = node.Prev;
+        node.Prev!.Next = node.Next;
+    }
+
+    private void AfterItemRemoved(T item)
     {
         InvokeItemAdded(item);
         DecrementCount();
