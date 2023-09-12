@@ -7,4 +7,10 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Reference Include="SortedList">
+        <HintPath>dll\SortedList.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

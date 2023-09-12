@@ -3,7 +3,7 @@ using SortedList.MyEventArgs;
 
 namespace SortedList;
 
-internal class SortedList<T> : ICollection<T> where T : IComparable<T>
+public class SortedList<T> : ICollection<T> where T : IComparable<T>
 {
     private MyNode<T>? _head;
     private MyNode<T>? _tail;
@@ -25,6 +25,23 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
     {
         IEnumerator <T> enumerator = new MyEnumerator(_head, this);
         return enumerator;
+    }
+
+    public IEnumerator<T> Reversed()
+    {
+        var listStarterVersion = Version;
+        var current = _tail;
+        while (current != null)
+        {
+            // version check
+            if (listStarterVersion != Version)
+            {
+                throw new InvalidOperationException("Collection was modified");
+            }
+
+            yield return current.Item;
+            current = current.Prev;
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -103,7 +120,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         while (current != null)
         {
             var temp = current.Item.CompareTo(item);
-            if (temp < 0) return false; // further numbers are bigger
+            if (temp > 0) return false; // further numbers are bigger // changed
             if (temp == 0) return true;
             current = current.Next;
         }
@@ -117,7 +134,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
         while (current != null)
         {
             var temp = current.Item.CompareTo(item);
-            if (temp < 0) return null; // further numbers are bigger
+            if (temp > 0) return null; // further numbers are bigger
             if (temp == 0) return current;
             current = current.Next;
         }
@@ -263,10 +280,7 @@ internal class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         public void Reset()
         {
-            CheckVersion();
-            _current = null;
-
-            // throw new NotSupportedException("Not implemented due to safety reasons");
+             throw new NotSupportedException("Not implemented due to safety reasons");
             // If changes are made to the collection,
             // such as adding, modifying, or deleting elements,
             // the behavior of Reset is undefined.
