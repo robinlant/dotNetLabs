@@ -1,5 +1,4 @@
 using System.Collections;
-using SortedList.MyEventArgs;
 
 namespace SortedList;
 
@@ -27,7 +26,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         var current = _tail;
         while (current != null)
         {
-            // version check
             if (listStarterVersion != Version)
             {
                 throw new InvalidOperationException("Collection was modified");
@@ -55,9 +53,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         {
             _head = new MyNode<T>(item);
             _tail = _head;
-            InvokeItemAdded(item);
-            IncrementCount();
-            UpdateVersion();
+            AfterItemAdded(item);
 
             return;
         }
@@ -67,9 +63,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             var node = new MyNode<T>(item) { Next = _head };
             _head.Prev = node;
             _head = node;
-            InvokeItemAdded(item);
-            IncrementCount();
-            UpdateVersion();
+            AfterItemAdded(item);
 
             return;
         }
@@ -82,9 +76,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
                 var node = new MyNode<T>(item) { Next = current.Next, Prev = current};
                 current.Next.Prev = node;
                 current.Next = node;
-                InvokeItemAdded(item);
-                IncrementCount();
-                UpdateVersion();
+                AfterItemAdded(item);
 
                 return;
             }
@@ -94,9 +86,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         _tail = new MyNode<T>(item) { Prev = current };
         current.Next = _tail;
-        InvokeItemAdded(item);
-        IncrementCount();
-        UpdateVersion();
+        AfterItemAdded(item);
     }
 
     public void Clear()
@@ -122,36 +112,28 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         {
             _head = null;
             _tail = null;
-            InvokeListCleared();
-            ResetVersion();
-            ResetCount();
+            AfterItemDeleted(item);
 
             return true;
         } if (searchedNode == _head)
         {
             _head = _head.Next;
             _head!.Prev = null;
-            InvokeItemRemoved(item);
-            DecrementCount();
-            UpdateVersion();
+            AfterItemDeleted(item);
 
             return true;
         } if (searchedNode == _tail)
         {
             _tail = _tail.Prev;
             _tail!.Next = null;
-            InvokeItemRemoved(item);
-            DecrementCount();
-            UpdateVersion();
+            AfterItemDeleted(item);
 
             return true;
         }
 
         searchedNode.Next!.Prev = searchedNode.Prev;
         searchedNode.Prev!.Next = searchedNode.Next;
-        InvokeItemRemoved(item);
-        DecrementCount();
-        UpdateVersion();
+        AfterItemDeleted(item);
 
         return true;
     }
@@ -187,7 +169,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         while (current != null)
         {
             var temp = current.Item.CompareTo(item);
-            if (temp > 0) return false; // further numbers are bigger // changed
+            if (temp > 0) return false;
             if (temp == 0) return true;
             current = current.Next;
         }
@@ -201,12 +183,33 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         while (current != null)
         {
             var temp = current.Item.CompareTo(item);
-            if (temp > 0) return null; // further numbers are bigger
+            if (temp > 0) return null;
             if (temp == 0) return current;
             current = current.Next;
         }
 
         return null;
+    }
+
+    private void AfterItemDeleted(T item)
+    {
+        InvokeItemAdded(item);
+        DecrementCount();
+        if (_head == null)
+        {
+            InvokeListCleared();
+            ResetVersion();
+            return;
+        }
+
+        UpdateVersion();
+    }
+
+    private void AfterItemAdded(T item)
+    {
+        InvokeItemRemoved(item);
+        UpdateVersion();
+        IncrementCount();
     }
 
     private void InvokeItemAdded(T item) => ItemAdded?.Invoke(this,new ItemEventArgs<T>(item));
@@ -215,7 +218,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     private void InvokeListCleared() => ListCleared?.Invoke(this, EventArgs.Empty);
 
-    // version and length control methods
     private void UpdateVersion() => Version++;
 
     private void ResetVersion() => Version = 0;
@@ -226,7 +228,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     private void ResetCount() => Count = 0;
 
-    // Enumerator
     private class MyEnumerator : IEnumerator<T>
     {
         private MyNode<T>? _current;
@@ -250,7 +251,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
                 CheckVersion();
                 if (_current == null)
                     throw new InvalidOperationException("Enumeration has not been started ot it is already finished");
-                return _current.Item; // THIS ENSURES THAT USER WILL WORK WITH T INSTEAD OF THE NODE
+                return _current.Item;
             }
         }
 
@@ -260,7 +261,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             if (_current == null)
             {
                 if (_head == null)
-                    return false; // list is empty
+                    return false;
 
                 _current = _head;
                 return true;

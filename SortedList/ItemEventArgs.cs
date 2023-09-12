@@ -1,4 +1,4 @@
-namespace SortedList.MyEventArgs;
+namespace SortedList;
 
 public class ItemEventArgs<T> : EventArgs
 {
