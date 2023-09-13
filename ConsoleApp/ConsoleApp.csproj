@@ -14,10 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="dll\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\SortedList\SortedList.csproj" />
     </ItemGroup>
 
