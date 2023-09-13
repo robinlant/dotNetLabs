@@ -19,8 +19,9 @@ public class Program
         Console.WriteLine($"Add: {AddCounter}  Remove: {RemoveCounter}");
         // Add Remove Methods
         list.Add(33);
-        list.Remove(4);
+        list.Remove(11);
         list.Remove(1);
+        list.Remove(2);
         Print(list);
         Console.WriteLine($"Add: {AddCounter}  Remove: {RemoveCounter}");
         // Copy To

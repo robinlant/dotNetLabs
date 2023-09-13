@@ -48,6 +48,9 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             throw new ArgumentNullException($"{typeof(T)} {nameof(item)} is null");
         }
 
+        if (Contains(item))
+            throw new ArgumentException("Item is already in the list");
+
         if (_head == null)
         {
             _head = new MyNode<T>(item);
@@ -159,7 +162,9 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         while (current.Next != null)
         {
-            if (current.Item.CompareTo(item) < 0)
+            if (current.Item.CompareTo(item) == 0)
+                throw new ArgumentException("Item is already in the list");
+            if (current.Item.CompareTo(item) > 0)
                 return current;
 
             current = current.Next;
