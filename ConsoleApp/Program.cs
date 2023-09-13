@@ -8,7 +8,9 @@ public class Program
     public static void Main(string[] args)
     {
         // Initialization
-        var list = new SortedList<int>() {1, 2, -5, 11};
+        var list = new SortedList<int>() {1, 8, 20, 11, 9,-1245, 44, 915 , -142};
+        Print(list);
+        list.Add(5);
         Print(list);
         // Events
         var AddCounter = 0;
@@ -20,8 +22,6 @@ public class Program
         // Add Remove Methods
         list.Add(33);
         list.Remove(11);
-        list.Remove(1);
-        list.Remove(2);
         Print(list);
         Console.WriteLine($"Add: {AddCounter}  Remove: {RemoveCounter}");
         // Copy To

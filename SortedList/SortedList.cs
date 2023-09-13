@@ -160,12 +160,10 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         var current = _head;
 
-        while (current.Next != null)
+        while (current.Next != null && current.Next.Item.CompareTo(item) < 0)
         {
             if (current.Item.CompareTo(item) == 0)
                 throw new ArgumentException("Item is already in the list");
-            if (current.Item.CompareTo(item) > 0)
-                return current;
 
             current = current.Next;
         }
