@@ -48,7 +48,6 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             throw new ArgumentNullException($"{typeof(T)} {nameof(item)} is null");
         }
 
-        // head is null
         if (_head == null)
         {
             _head = new MyNode<T>(item);
@@ -57,45 +56,18 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
             return;
         }
-        // item < head
-        if (_head.Item.CompareTo(item) > 0)
+
+        var nodeToInsertAfter = FindNodeToInsertAfter(item);
+
+        if (nodeToInsertAfter == null)
         {
-            var node = new MyNode<T>(item) { Next = _head };
-            _head.Prev = node;
-            _head = node;
-            AfterItemAdded(item);
-
-            return;
-        }
-        // cycles till the end
-        var current = _head;
-        while (current.Next != null)
+            _head.Prev = new MyNode<T>(item) {Next = _head};
+            _head = _head.Prev;
+        } else
         {
-            if (current.Next.Item.CompareTo(item) > 0)
-            {
-                var node = new MyNode<T>(item) { Next = current.Next, Prev = current};
-                current.Next.Prev = node;
-                current.Next = node;
-                AfterItemAdded(item);
-
-                return;
-            }
-
-            current = current.Next;
+           InsertAfter(nodeToInsertAfter, item);
         }
-
-        _tail = new MyNode<T>(item) { Prev = current };
-        current.Next = _tail;
         AfterItemAdded(item);
-    }
-
-    public void Clear()
-    {
-        _head = null;
-        _tail = null;
-        InvokeListCleared();
-        ResetVersion();
-        ResetCount();
     }
 
     public bool Remove(T item)
@@ -112,6 +84,15 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         AfterItemRemoved(item);
 
         return true;
+    }
+
+    public void Clear()
+    {
+        _head = null;
+        _tail = null;
+        InvokeListCleared();
+        ResetVersion();
+        ResetCount();
     }
 
     public void CopyTo(T[] array, int arrayIndex)
@@ -151,6 +132,40 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
         }
 
         return false;
+    }
+
+    private void InsertAfter(MyNode<T> node, T item)
+    {
+        var newNode = new MyNode<T>(item) { Prev = node, Next = node.Next};
+
+        if (_tail == node)
+        {
+            node.Next = newNode;
+            _tail = newNode;
+
+            return;
+        }
+
+        node.Next!.Prev = newNode;
+        node.Next = newNode;
+    }
+
+    private MyNode<T>? FindNodeToInsertAfter(T item)
+    {
+        if (_head == null || _head.Item.CompareTo(item) > 0)
+            return null;
+
+        var current = _head;
+
+        while (current.Next != null)
+        {
+            if (current.Item.CompareTo(item) < 0)
+                return current;
+
+            current = current.Next;
+        }
+
+        return current;
     }
 
     private MyNode<T>? FindNodeByItem(T item)
@@ -195,7 +210,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     private void AfterItemRemoved(T item)
     {
-        InvokeItemAdded(item);
+        InvokeItemRemoved(item);
         DecrementCount();
         if (_head == null)
         {
@@ -209,7 +224,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     private void AfterItemAdded(T item)
     {
-        InvokeItemRemoved(item);
+        InvokeItemAdded(item);
         UpdateVersion();
         IncrementCount();
     }
