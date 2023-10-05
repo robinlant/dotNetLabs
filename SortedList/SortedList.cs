@@ -125,6 +125,11 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     public bool Contains(T item)
     {
+        if (item == null)
+        {
+            throw new ArgumentNullException($"{typeof(T)} {nameof(item)} is null");
+        }
+
         var current = _head;
         while (current != null)
         {
