@@ -2,7 +2,7 @@ namespace  SortedListTests;
 
 public static class Helper
 {
-    public static void AssertEqual<T>(IEnumerable<T> enum1, IEnumerable<T> enum2) where T : IComparable<T>
+    public static void AssertEnumerablesEqual<T>(IEnumerable<T> enum1, IEnumerable<T> enum2) where T : IComparable<T>
     {
         var enumOne = enum1.GetEnumerator();
         var enumTwo = enum2.GetEnumerator();

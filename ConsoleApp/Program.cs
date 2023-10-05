@@ -35,6 +35,9 @@ public class Program
         // Clear Method
         list.Clear();
         Print(list);
+
+        string k = "213";
+
     }
 
     static void Print<T>(IEnumerable<T> list)

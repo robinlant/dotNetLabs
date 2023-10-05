@@ -105,6 +105,11 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             throw new ArgumentNullException($"Array {nameof(array)} is null");
         }
 
+        if (array.Length == 0 && Count == 0)
+        {
+            return;
+        }
+
         if (array.Length - arrayIndex < Count )
         {
             throw new ArgumentException("Not enough space. Count > array length - starting index");
@@ -112,7 +117,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
         if (arrayIndex < 0 || arrayIndex >= array.Length)
         {
-            throw new ArgumentException($"Invalid Argument. arrayIndex = {arrayIndex}. It has to be greater than zero and smaller than array length");
+            throw new ArgumentException($"Invalid Argument. arrayIndex = {arrayIndex}. It has to be greater or equal to zero and smaller then array length");
         }
 
         var i = 0;
