@@ -56,7 +56,7 @@ public class CopyToTests
     [Fact]
     public void CopyTo_ArrayLengthListLengthAreZero_ReturnEmptyArray()
     {
-        var list = new SortedList<int>() { };
+        var list = new SortedList<int>();
         var arr = new int[] { };
 
         list.CopyTo(arr, 0);

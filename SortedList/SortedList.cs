@@ -6,7 +6,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 {
     private MyNode<T>? _head;
     private MyNode<T>? _tail;
-    public bool IsReadOnly { get; } = false;
+    public bool IsReadOnly => false;
     public int Count { get; private set; }
     public int Version { get; private set; }
 

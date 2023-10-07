@@ -21,7 +21,7 @@ public class CoreMethodsTests
         };
     }
 
-    public static IEnumerable<object[]>Data_List_Duplicate_ExpectedAfterRemove()
+    public static IEnumerable<object[]> Data_List_Duplicate_ExpectedAfterRemove()
     {
         yield return new object[]
         {
@@ -37,7 +37,7 @@ public class CoreMethodsTests
         };
     }
 
-    public static IEnumerable<object[]>Data_List_NewItem()
+    public static IEnumerable<object[]> Data_List_NewItem()
     {
         yield return new object[]
         {
@@ -48,6 +48,14 @@ public class CoreMethodsTests
         {
             new SortedList<int> { 1, -100, 200, 87, -600, 3 },
             1992,
+        };
+    }
+
+    public static IEnumerable<object[]> Data_NotEmptyList()
+    {
+        yield return new object[]
+        {
+            new SortedList<int> { 1, 2, 3, 4 },
         };
     }
 
@@ -154,20 +162,53 @@ public class CoreMethodsTests
         Assert.Throws<ArgumentNullException>(action);
     }
 
-    [Fact]
-    public void Count_AddRemoveClear_CountChanges()
+    [Theory]
+    [MemberData(nameof(Data_NotEmptyList))]
+    public void Count_NotEmptyList_Clear_CountChangesToZero<T>(SortedList<T> list) where T : IComparable<T>
     {
-        var list = new SortedList<int>() { 1, 2, 3 };
+        var EMPTY_LIST_COUNT = 0;
+        var countBeforeClear = list.Count;
 
-        list.Add(4);
-        var countAfterAdd = list.Count;
-        list.Remove(1);
-        var countAfterRemove = list.Count;
         list.Clear();
         var countAfterClear = list.Count;
 
-        Assert.Equal(4, countAfterAdd);
-        Assert.Equal(3, countAfterRemove);
-        Assert.Equal(0, countAfterClear);
+        Assert.NotEqual(EMPTY_LIST_COUNT, countBeforeClear);
+        Assert.Equal(EMPTY_LIST_COUNT, countAfterClear);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data_List_Duplicate))]
+    public void Count_NotEmptyList_RemoveItem_CountDecreasesByOne<T>(SortedList<T> list, T item) where T : IComparable<T>
+    {
+        var countBeforeRemove = list.Count;
+        var EXPECTED_DECREASE = 1;
+
+        list.Remove(item);
+        var actualDecrease = countBeforeRemove - list.Count;
+
+        Assert.Equal(EXPECTED_DECREASE, actualDecrease);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data_List_NewItem))]
+    public void Count_NotEmptyList_AddItem_CountIncreasesByOne<T>(SortedList<T> list, T item) where T : IComparable<T>
+    {
+        var countBeforeRemove = list.Count;
+        var EXPECTED_INCREASE = 1;
+
+        list.Add(item);
+        var actualIncrease = list.Count - countBeforeRemove;
+
+        Assert.Equal(EXPECTED_INCREASE, actualIncrease);
+    }
+
+    [Fact]
+    public void IsReadOnly_ShouldAlwaysReturnsFalse()
+    {
+        var list = new SortedList<int>();
+
+        var isReadOnly = list.IsReadOnly;
+
+        Assert.False(isReadOnly);
     }
 }
