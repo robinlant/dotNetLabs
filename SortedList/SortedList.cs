@@ -7,7 +7,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
     private MyNode<T>? _head;
     private MyNode<T>? _tail;
     public bool IsReadOnly { get; } = false;
-    public int Count { get; private set; } // length of the list
+    public int Count { get; private set; }
     public int Version { get; private set; }
 
     public event EventHandler<ItemEventArgs<T>>? ItemAdded;
@@ -91,6 +91,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
 
     public void Clear()
     {
+        if (_head == null) return;
         _head = null;
         _tail = null;
         InvokeListCleared();
@@ -322,6 +323,7 @@ public class SortedList<T> : ICollection<T> where T : IComparable<T>
             }
         }
     }
+
     private class MyNode<TU>
     {
         public TU Item { get; set; }

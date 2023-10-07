@@ -32,12 +32,9 @@ public class Program
         Print(arr);
         // Contains
         Console.WriteLine(list.Contains(1).ToString() + "  " + list.Contains(33).ToString());
-        // Clear Method
-        list.Clear();
-        Print(list);
-
-        string k = "213";
-
+        // Clear xMethod
+        var kk = new SortedList<int>().Reversed();
+        Console.WriteLine(kk.Current);
     }
 
     static void Print<T>(IEnumerable<T> list)

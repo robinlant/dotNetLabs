@@ -1,8 +1,8 @@
-namespace SortedListTests;
+namespace SortedList.Test;
 
 public class CoreMethodsTests
 {
-    public static IEnumerable<object[]> AddData_NoDuplicates()
+    public static IEnumerable<object[]> Data_List_NewItem_ExpectedAfterAdd()
     {
         yield return new object[]
         {
@@ -12,7 +12,7 @@ public class CoreMethodsTests
         };
     }
 
-    public static IEnumerable<object[]> AddData_Duplicates()
+    public static IEnumerable<object[]> Data_List_Duplicate()
     {
         yield return new object[]
         {
@@ -21,7 +21,7 @@ public class CoreMethodsTests
         };
     }
 
-    public static IEnumerable<object[]>RemoveData_InTheList()
+    public static IEnumerable<object[]>Data_List_Duplicate_ExpectedAfterRemove()
     {
         yield return new object[]
         {
@@ -37,7 +37,7 @@ public class CoreMethodsTests
         };
     }
 
-    public static IEnumerable<object[]>RemoveData_NotInTheList()
+    public static IEnumerable<object[]>Data_List_NewItem()
     {
         yield return new object[]
         {
@@ -51,93 +51,107 @@ public class CoreMethodsTests
         };
     }
 
+    [Theory]
+    [MemberData(nameof(Data_List_Duplicate))]
+    public void OrderRetain_RemoveThenAdd_OrderIsRetained<T>(SortedList<T> list, T item) where T : IComparable<T>
+    {
+        var copy = list.ToArray();
 
+        list.Remove(item);
+        list.Add(item);
+
+        MyAssert.Equal(list, copy);
+    }
 
     [Theory]
-    [MemberData(nameof(AddData_NoDuplicates))]
+    [MemberData(nameof(Data_List_NewItem_ExpectedAfterAdd))]
     public void Add_NoDuplicates_SortedList<T>(SortedList<T> list, T item, T[] expOutput) where T : IComparable<T>
     {
         list.Add(item);
 
-        Helper.AssertEnumerablesEqual(list,expOutput);
+        MyAssert.Equal(list,expOutput);
     }
 
     [Theory]
-    [MemberData(nameof(AddData_Duplicates))]
+    [MemberData(nameof(Data_List_Duplicate))]
     public void Add_Duplicates_ArgumentException<T>(SortedList<T> list, T item) where T : IComparable<T>
     {
-        Assert.Throws<ArgumentException>(() => list.Add(item));
+        Action action = () => list.Add(item);
+
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Theory]
-    [MemberData(nameof(RemoveData_InTheList))]
+    [MemberData(nameof(Data_List_Duplicate_ExpectedAfterRemove))]
     public void Remove_ItemInTheList_True<T>(SortedList<T> list, T item, IEnumerable<T> expected) where T : IComparable<T>
     {
         bool isDeletionSuccessful = list.Remove(item);
 
         Assert.True(isDeletionSuccessful);
-        Helper.AssertEnumerablesEqual(list, expected);
+        MyAssert.Equal(list, expected);
     }
 
     [Theory]
-    [MemberData(nameof(RemoveData_NotInTheList))]
+    [MemberData(nameof(Data_List_NewItem))]
     public void Remove_ItemNotInTheList_False<T>(SortedList<T> list, T item) where T : IComparable<T>
     {
         bool isDeletionSuccessful = list.Remove(item);
 
         Assert.False(isDeletionSuccessful);
-        Assert.DoesNotContain(item, list);
+        MyAssert.DoesNotContain(item, list);
     }
 
     [Fact]
     public void Add_Null_ArgumentNullException()
     {
         var list = new SortedList<string> {};
-        string nullString = null;
 
-        Assert.Throws<ArgumentNullException>(() => list.Add(nullString));
+        string nullString = null;
+        Action action = () => list.Add(nullString);
+
+        Assert.Throws<ArgumentNullException>(action);
     }
 
     [Fact]
     public void Remove_Null_ArgumentNullException()
     {
         var list = new SortedList<string>();
-        string nullString = null;
 
-        Assert.Throws<ArgumentNullException>(() => list.Remove(nullString));
+        string nullString = null;
+        Action action = () => list.Remove(nullString);
+
+        Assert.Throws<ArgumentNullException>(action);
     }
 
-    [Fact]
-    public void Contains_ItemInTheList_True()
+    [Theory]
+    [MemberData(nameof(Data_List_Duplicate))]
+    public void Contains_ItemInTheList_True<T>(SortedList<T> list, T item) where T : IComparable<T>
     {
-        var k = 10;
-        var list = new SortedList<int> { 1, -100, 200, 87, -600, 3, k };
-
-        bool contains = list.Contains(k);
+        bool contains = list.Contains(item);
 
         Assert.True(contains);
-        Assert.Contains(k, list);
+        MyAssert.Contains(item, list);
     }
 
-    [Fact]
-    public void Contains_ItemNotInTheList_False()
+    [Theory]
+    [MemberData(nameof(Data_List_NewItem))]
+    public void Contains_ItemNotInTheList_False<T>(SortedList<T> list, T item) where T : IComparable<T>
     {
-        var k = 10;
-        var list = new SortedList<int> { 1, -100, 200, 87, -600, 3 };
-
-        bool contains = list.Contains(k);
+        bool contains = list.Contains(item);
 
         Assert.False(contains);
-        Assert.DoesNotContain(k, list);
+        MyAssert.DoesNotContain(item, list);
     }
 
     [Fact]
     public void Contains_Null_ArgumentNullException()
     {
         var list = new SortedList<string> {};
-        string nullString = null;
 
-        Assert.Throws<ArgumentNullException>(() => list.Contains(nullString));
+        string nullString = null;
+        Action action = () => list.Contains(nullString);
+
+        Assert.Throws<ArgumentNullException>(action);
     }
 
     [Fact]

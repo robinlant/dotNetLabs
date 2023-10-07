@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortedList", "SortedList\So
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{A0FB5337-686E-4E13-A775-B27C48E20D58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortedListTests", "SortedListTests\SortedListTests.csproj", "{23A2154C-39EA-4C32-ADBA-780315067A23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortedList.Test", "SortedList.Test\SortedList.Test.csproj", "{23A2154C-39EA-4C32-ADBA-780315067A23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
